@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Signup - PizzApp</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,100..900;1,100..900&family=Crimson+Pro:ital,wght@0,200..900;1,200..900&family=DM+Serif+Text:ital@0;1&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Titan+One&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+
+    <link rel="stylesheet" href="/css/auth.css" />
+    <link rel="icon" href="/media/favicon.svg" type="image/svg+xml" />
+  </head>
+
+  <body>
+    <div class="container d-flex justify-content-center align-items-center auth-card">
+      <div class="card p-4 shadow signup-card" style="width: 100%; max-width: 400px">
+
+        <h2 class="text-center mb-3">Signup to PizzApp</h2>
+
+        <!-- Role toggle bar -->
+        <div class="role-tabs mb-4">
+          <button class="role-tab active" onclick="selectRole(this, 'customer')" type="button">Customer</button>
+          <button class="role-tab" onclick="selectRole(this, 'admin')" type="button">Admin</button>
+          <button class="role-tab" onclick="selectRole(this, 'driver')" type="button">Driver</button>
+        </div>
+
+        <!-- Show signup success or error messages from the server -->
+        <% if (typeof query !== 'undefined' && query.error) { %>
+          <div class="alert alert-danger text-center"><%= query.error %></div>
+        <% } %>
+        <% if (typeof query !== 'undefined' && query.success) { %>
+          <div class="alert alert-success text-center"><%= query.success %></div>
+        <% } %>
+
+        <!-- Signup form -->
+        <form action="/signup" method="POST">
+
+          <!-- Hidden role input — submitted with the form -->
+          <input type="hidden" name="role" id="role-input" value="customer" />
+
+          <!-- Name -->
+          <div class="mb-3">
+            <label class="form-label">Full Name</label>
+            <input
+              type="text"
+              name="username"
+              class="form-control"
+              placeholder="Enter your name"
+              required
+            />
+          </div>
+
+          <!-- Email -->
+          <div class="mb-3">
+            <label class="form-label">Email address</label>
+            <input
+              type="email"
+              name="email"
+              class="form-control"
+              placeholder="Enter your email"
+              required
+            />
+          </div>
+
+          <!-- Password -->
+          <div class="mb-3">
+            <label class="form-label">Password</label>
+            <input
+              type="password"
+              name="password"
+              class="form-control"
+              placeholder="Enter your password"
+              required
+            />
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100 mb-2">
+            Sign Up
+          </button>
+
+          <button
+            type="button"
+            class="btn btn-outline-success w-100"
+            onclick="window.location.href = '/login'"
+          >
+            Login
+          </button>
+
+        </form>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+      function selectRole(el, role) {
+        document.querySelectorAll('.role-tab').forEach(btn => {
+          btn.classList.remove('active');
+        });
+        el.classList.add('active');
+        document.getElementById('role-input').value = role;
+      }
+    </script>
+  </body>
+</html>

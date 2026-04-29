@@ -1,0 +1,31 @@
+<!-- EJS Head Partial - Reusable HTML head section for all pages -->
+<!-- This partial eliminates code duplication by providing consistent head structure -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Dynamic page title - defaults to "Habitcents" if not specified -->
+    <title><%= title || 'PizzApp' %></title>
+
+    <!-- Google Fonts - consistent typography across the app -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,100..900;1,100..900&family=Crimson+Pro:ital,wght@0,200..900;1,200..900&family=DM+Serif+Text:ital@0;1&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Titan+One&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap CSS framework for responsive design -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <!-- Dynamic CSS loading - pages can specify their own stylesheets -->
+    <% if (typeof css !== 'undefined' && css) { %>
+      <% css.forEach(href => { %>
+        <link rel="stylesheet" href="<%= href %>" />
+      <% }); %>
+    <% } %>
+
+    <!-- Favicon for browser tab -->
+    <link rel="icon" href="/media/favicon.svg" type="image/svg+xml" />
+  </head>
