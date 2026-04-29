@@ -155,8 +155,8 @@ app.post("/place-order", requireLogin, (req, res) => {
 
             item.toppings.forEach((t) => {
               db.query(
-                "INSERT INTO Order_Toppings (item_id,topping_id) VALUES (?,?)",
-                [item_id, t],
+                "INSERT INTO Order_Toppings (item_id, topping_id) VALUES (?, ?)",
+                [item_id, t.id],
               );
             });
           },

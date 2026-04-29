@@ -1,20 +1,40 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <link rel="stylesheet" href="/css/base.css" />
-  </head>
-  <body>
-    <h2>Cart</h2>
-    <ul id="cart-list"></ul>
+<% title = 'Cart - PizzApp'; css = ['/css/base.css', '/css/style.css']; %>
+<%- include('partials/head') %>
+
+<body>
+
+<%- include('partials/navbar') %>
+
+<div class="container mt-5">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="brand-text">🛒 Your Cart</h2>
+
+    <a href="/menu">
+      <button class="btn btn-outline-primary">← Back to Menu</button>
+    </a>
+  </div>
+
+  <!-- CENTER FIX -->
+  <div id="cart-list" class="row g-4 justify-content-center"></div>
+
+  <!-- SUMMARY -->
+  <div class="cart-summary mt-5 p-4 mx-auto">
     <h3 id="total"></h3>
 
     <form action="/place-order" method="POST">
-      <button>Place Order</button>
+      <button class="btn btn-primary w-100 mt-3">
+        Place Order
+      </button>
     </form>
+  </div>
 
-    <script type="module">
-      import { initCart } from "/js/cart.js";
-      initCart();
-    </script>
-  </body>
+</div>
+
+<script type="module">
+  import { initCart } from "/js/cart.js";
+  initCart();
+</script>
+
+</body>
 </html>

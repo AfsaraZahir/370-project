@@ -124,3 +124,106 @@ footer {
 footer p {
   color: #dcd6f7;
 }
+
+/* Pizza Cards */
+
+.pizza-card {
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(15px);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  transition: 0.3s;
+}
+
+.pizza-card:hover {
+  transform: translateY(-5px);
+}
+
+.pizza-title {
+  font-family: "Titan One", cursive;
+  font-size: 1.6rem;
+}
+
+.pizza-desc {
+  opacity: 0.8;
+  font-size: 0.9rem;
+}
+
+/* toppings layout */
+.toppings {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.topping-item {
+  font-size: 0.85rem;
+  background: rgba(166, 177, 225, 0.2);
+  padding: 5px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* toast */
+.toast-msg {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #424874;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 10px;
+  z-index: 9999;
+}
+
+/* Cart Cards */
+
+.cart-card {
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(15px);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  transition: 0.3s;
+}
+
+.cart-card:hover {
+  transform: translateY(-5px);
+}
+
+/* Summary Box */
+
+.cart-summary {
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(15px);
+  border-radius: 16px;
+  text-align: center;
+}
+
+.cart-card {
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(15px);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  transition: 0.3s;
+  height: 100%;
+}
+
+.cart-card:hover {
+  transform: translateY(-5px);
+}
+
+.cart-meta {
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+.cart-summary {
+  max-width: 500px;
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(15px);
+  border-radius: 16px;
+  text-align: center;
+}

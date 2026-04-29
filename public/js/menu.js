@@ -8,69 +8,97 @@ export async function initMenu() {
   const container = document.getElementById("pizza-list");
 
   pizzas.forEach((p) => {
-    const div = document.createElement("div");
+    const col = document.createElement("div");
+    col.className = "col-md-4";
 
-    div.innerHTML = `
-      <h3>${p.name}</h3>
-      <p>${p.description}</p>
-      <p>৳ ${p.base_price}</p>
+    col.innerHTML = `
+      <div class="pizza-card">
 
-      <select class="crust">
-        ${crusts
-          .map(
-            (c) => `<option value="${c.crust_id}" data-price="${c.extra_price}">
-          ${c.crust_name} (+${c.extra_price})
-        </option>`,
-          )
-          .join("")}
-      </select>
+        <h3 class="pizza-title">${p.name}</h3>
+        <p class="pizza-desc">${p.description || ""}</p>
 
-      ${toppings
-        .map(
-          (t) => `
-        <label>
-          <input type="checkbox" value="${t.topping_id}" data-price="${t.extra_price}">
-          ${t.topping_name}
-        </label>
-      `,
-        )
-        .join("")}
+        <div class="price mb-2">৳ ${p.base_price}</div>
 
-      <input type="number" value="1" min="1" class="qty">
+        <label>Crust</label>
+        <select class="form-select mb-2 crust">
+          ${crusts
+            .map(
+              (c) => `
+            <option value="${c.crust_id}" data-price="${c.extra_price}">
+              ${c.crust_name} (+${c.extra_price})
+            </option>
+          `,
+            )
+            .join("")}
+        </select>
 
-      <button class="add">Add</button>
+        <label>Toppings</label>
+        <div class="toppings mb-2">
+          ${toppings
+            .map(
+              (t) => `
+            <label class="topping-item">
+              <input type="checkbox" value="${t.topping_id}" data-price="${t.extra_price}">
+              ${t.topping_name}
+            </label>
+          `,
+            )
+            .join("")}
+        </div>
+
+        <label>Quantity</label>
+        <input type="number" value="1" min="1" class="form-control mb-2 qty">
+
+        <button class="btn btn-primary w-100 add-btn">Add to Cart</button>
+
+      </div>
     `;
 
-    div.querySelector(".add").onclick = async () => {
-      const crust = div.querySelector(".crust");
-      const crust_price = Number(crust.selectedOptions[0].dataset.price);
+    col.querySelector(".add-btn").onclick = async () => {
+      const crustEl = col.querySelector(".crust");
 
-      const checked = [...div.querySelectorAll("input[type=checkbox]:checked")];
-      const topping_ids = checked.map((c) => c.value);
-      const topping_price = checked.reduce(
-        (s, c) => s + Number(c.dataset.price),
-        0,
-      );
+      const basePrice = Number(p.base_price); // ✅ FIX
+      const crust_price = Number(crustEl.selectedOptions[0].dataset.price);
 
-      const qty = Number(div.querySelector(".qty").value);
+      const checked = [...col.querySelectorAll("input[type=checkbox]:checked")];
 
-      const price = p.base_price + crust_price + topping_price;
+      const toppingsData = checked.map((c) => ({
+        id: c.value,
+        name: c.parentElement.innerText.trim(),
+        price: Number(c.dataset.price),
+      }));
+
+      const topping_price = toppingsData.reduce((s, t) => s + t.price, 0);
+
+      const qty = Number(col.querySelector(".qty").value);
+
+      const price = basePrice + crust_price + topping_price; // ✅ FIXED
 
       await fetch("/add-to-cart", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           pizza_id: p.pizza_id,
-          crust_id: crust.value,
-          toppings: topping_ids,
+          pizza_name: p.name,
+          crust_id: crustEl.value,
+          crust_name: crustEl.selectedOptions[0].text,
+          toppings: toppingsData,
           quantity: qty,
           price,
         }),
       });
 
-      alert("Added 🍕");
+      showToast("Added to cart 🍕");
     };
 
-    container.appendChild(div);
+    container.appendChild(col);
   });
+}
+
+function showToast(msg) {
+  const toast = document.createElement("div");
+  toast.innerText = msg;
+  toast.className = "toast-msg";
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 2000);
 }

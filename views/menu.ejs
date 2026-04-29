@@ -1,11 +1,17 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <link rel="stylesheet" href="/css/base.css" />
-  </head>
+<% title = 'Pizza Menu - PizzApp'; css = ['/css/base.css', '/css/style.css']; %>
+<%- include('partials/head') %>
   <body>
-    <h2 class="brand-text">🍕 Pizza Menu</h2>
-    <div id="pizza-list"></div>
+    <div class="container mt-5">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="brand-text">🍕 Pizza Menu</h2>
+
+        <a href="/cart">
+          <button class="btn btn-primary">🛒 Cart</button>
+        </a>
+      </div>
+
+      <div id="pizza-list" class="row g-4"></div>
+    </div>
 
     <script type="module">
       import { initMenu } from "/js/menu.js";
