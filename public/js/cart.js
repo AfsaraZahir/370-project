@@ -2,6 +2,9 @@ export async function initCart() {
   const res = await fetch("/get-cart");
   const data = await res.json();
 
+  const discountRes = await fetch("/get-discount");
+  const discountData = await discountRes.json();
+
   const list = document.getElementById("cart-list");
   const totalEl = document.getElementById("total");
 
@@ -40,7 +43,11 @@ export async function initCart() {
     list.appendChild(col);
   });
 
-  totalEl.innerText = "Total: ৳ " + total;
+  let totalText = `Total: ৳ ${total}`;
+  if (discountData.discount) {
+    totalText += ` - ${discountData.discount.discount_percent}% off (${discountData.discount.discount_name}) = ৳ ${discountData.finalTotal}`;
+  }
+  totalEl.innerText = totalText;
 }
 
 window.removeItem = async (i) => {

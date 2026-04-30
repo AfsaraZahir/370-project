@@ -12,7 +12,9 @@ export async function initAdmin() {
   container.innerHTML = orders
     .map((o) => {
       return `
-      <div class="cart-card mb-3">
+    <div class="col-sm-6 col-md-4 col-lg-3">
+
+      <div class="cart-card h-100">
 
         <strong>Order #${o.order_id}</strong><br>
         Total: ৳ ${o.total_amount || 0}<br>
@@ -40,7 +42,9 @@ export async function initAdmin() {
         </select>
 
       </div>
-    `;
+
+    </div>
+  `;
     })
     .join("");
 

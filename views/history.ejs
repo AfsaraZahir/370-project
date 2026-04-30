@@ -1,0 +1,20 @@
+<% title = 'Order History'; css = ['/css/base.css','/css/style.css']; %>
+<%- include('partials/head') %>
+
+<body>
+<%- include('partials/navbar') %>
+<div class="container mt-5">
+
+  <h2 class="brand-text mb-4">📜 Order History</h2>
+
+  <div id="history-list" class="row g-4"></div>
+
+</div>
+
+<script type="module">
+  import { initHistory } from "/js/history.js";
+  initHistory();
+</script>
+
+</body>
+</html>

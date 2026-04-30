@@ -1,3 +1,10 @@
+const statusMap = {
+  pending: { text: "🟡 Pending", class: "bg-warning text-dark" },
+  assigned: { text: "👨‍🍳 Assigned", class: "bg-info text-dark" },
+  out_for_delivery: { text: "🚚 On the way", class: "bg-primary" },
+  delivered: { text: "✅ Delivered", class: "bg-success" },
+};
+
 export async function initOrders() {
   const container = document.getElementById("orders-container");
 
@@ -6,49 +13,78 @@ export async function initOrders() {
     const data = await res.json();
 
     if (!data.length) {
-      container.innerHTML = "<p>No orders yet</p>";
+      container.innerHTML = "<p>No active orders</p>";
       return;
     }
 
     container.innerHTML = data
       .map((o) => {
-        const steps = [
-          "received",
-          "preparing",
-          "baking",
-          "out_for_delivery",
-          "delivered",
-        ];
+        const status = statusMap[o.delivery_status] || statusMap["pending"];
 
-        const currentIndex = steps.indexOf(o.delivery_status || o.status);
+        // 🍕 items (cleaner layout)
+        const itemsHTML = o.items
+          .map(
+            (item) => `
+        <div class="order-item">
+          🍕 <strong>${item.pizza_name}</strong>
+          <span class="qty">(x${item.quantity})</span>
+          <div class="sub-text">Crust: ${item.crust_name}</div>
+        </div>
+      `,
+          )
+          .join("");
+
+        // 🔥 steps
+        const steps = ["pending", "assigned", "out_for_delivery", "delivered"];
+        const currentIndex = steps.indexOf(o.delivery_status);
+
+        const stepLabels = {
+          pending: "received",
+          assigned: "assigned",
+          out_for_delivery: "delivery",
+          delivered: "done",
+        };
 
         const progressHTML = steps
           .map((step, i) => {
             const active = i <= currentIndex ? "active-step" : "";
-            return `<div class="step ${active}">${step.replaceAll("_", " ")}</div>`;
+            return `<div class="step ${active}">
+          ${stepLabels[step]}
+        </div>`;
           })
           .join("");
 
         return `
-        <div class="cart-card mb-4">
+        <div class="col-md-6 col-lg-4">
+          <div class="cart-card order-card">
 
-          <h5>Order #${o.order_id}</h5>
+            <div class="d-flex justify-content-between align-items-center">
+              <h5>Order #${o.order_id}</h5>
+              <span class="badge rounded-pill ${status.class}">
+                ${status.text}
+              </span>
+            </div>
 
-          <div class="tracking-bar">
-            ${progressHTML}
+            <div class="tracking-bar">
+              ${progressHTML}
+            </div>
+
+            <div class="order-items mt-3">
+              ${itemsHTML}
+            </div>
+
+            <hr>
+
+            <p class="price">৳ ${o.total_amount}</p>
+            <p class="date">${new Date(o.created_at).toLocaleString()}</p>
+
           </div>
-
-          <p class="mt-2">
-            Current Status: <strong>${o.delivery_status || o.status}</strong>
-          </p>
-
         </div>
       `;
       })
       .join("");
   }
 
-  // 🔁 AUTO REFRESH every 5 sec
   loadOrders();
   setInterval(loadOrders, 5000);
 }

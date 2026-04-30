@@ -152,6 +152,52 @@ app.get("/get-toppings", requireLogin, (req, res) => {
   db.query("SELECT * FROM Toppings", (err, result) => res.json(result));
 });
 
+app.get("/get-discount", requireLogin, (req, res) => {
+  const user = req.session.user;
+  const cart = req.session.cart || [];
+  let total = 0;
+  cart.forEach((item) => {
+    total += Number(item.price) * Number(item.quantity);
+  });
+
+  db.query(
+    "SELECT total_orders, total_spending FROM Customer WHERE customer_id=?",
+    [user.user_id],
+    (err, customerRes) => {
+      if (err) return res.json({ discount: null, finalTotal: total });
+
+      const customer = customerRes[0];
+      const total_orders = (customer.total_orders || 0) + 1;
+      const total_spending = (customer.total_spending || 0) + total;
+
+      db.query("SELECT * FROM Discounts", (err2, discounts) => {
+        if (err2) return res.json({ discount: null, finalTotal: total });
+
+        let bestDiscount = null;
+        discounts.forEach((d) => {
+          let valid = true;
+          if (d.min_orders && total_orders < d.min_orders) valid = false;
+          if (d.min_spending && total_spending < d.min_spending) valid = false;
+          if (
+            valid &&
+            (!bestDiscount ||
+              d.discount_percent > bestDiscount.discount_percent)
+          ) {
+            bestDiscount = d;
+          }
+        });
+
+        let finalTotal = total;
+        if (bestDiscount) {
+          finalTotal = total - (total * bestDiscount.discount_percent) / 100;
+        }
+
+        res.json({ discount: bestDiscount, finalTotal });
+      });
+    },
+  );
+});
+
 // ===== CART =====
 function getCart(req) {
   if (!req.session.cart) req.session.cart = [];
@@ -182,55 +228,161 @@ app.post("/place-order", requireLogin, (req, res) => {
 
   if (!cart.length) return res.redirect("/cart");
 
+  // 🔹 Step 1: Calculate total
+  let total = 0;
+  cart.forEach((item) => {
+    total += Number(item.price) * Number(item.quantity);
+  });
+
+  // 🔹 Step 2: Get customer stats
   db.query(
-    "INSERT INTO Orders (customer_id, total_amount) VALUES (?, ?)",
-    [user.user_id, 0],
-    (err, orderRes) => {
-      if (err) return res.send("Order error");
+    "SELECT total_orders, total_spending FROM Customer WHERE customer_id=?",
+    [user.user_id],
+    (err, customerRes) => {
+      const customer = customerRes[0];
+      const total_orders = (customer.total_orders || 0) + 1;
+      const total_spending = (customer.total_spending || 0) + total;
 
-      const order_id = orderRes.insertId;
-      let total = 0;
+      // 🔹 Step 3: Get all discounts
+      db.query("SELECT * FROM Discounts", (err2, discounts) => {
+        let bestDiscount = null;
 
-      cart.forEach((item) => {
-        total += item.price * item.quantity;
+        discounts.forEach((d) => {
+          let valid = true;
 
+          if (d.min_orders && total_orders < d.min_orders) {
+            valid = false;
+          }
+
+          if (d.min_spending && total_spending < d.min_spending) {
+            valid = false;
+          }
+
+          if (valid) {
+            if (
+              !bestDiscount ||
+              d.discount_percent > bestDiscount.discount_percent
+            ) {
+              bestDiscount = d;
+            }
+          }
+        });
+        console.log("BEST DISCOUNT", bestDiscount);
+
+        let finalTotal = total;
+        let discount_id = null;
+
+        // 🔥 Apply discount
+        if (bestDiscount) {
+          discount_id = bestDiscount.discount_id;
+          finalTotal = total - (total * bestDiscount.discount_percent) / 100;
+        }
+
+        // 🔹 Step 4: Insert order
         db.query(
-          "INSERT INTO Order_Items (order_id, pizza_id, crust_id, quantity, item_price) VALUES (?, ?, ?, ?, ?)",
-          [order_id, item.pizza_id, item.crust_id, item.quantity, item.price],
-          (err, itemRes) => {
-            if (err) return;
+          "INSERT INTO Orders (customer_id, discount_id, total_amount) VALUES (?, ?, ?)",
+          [user.user_id, discount_id, finalTotal],
+          (err3, orderRes) => {
+            const order_id = orderRes.insertId;
 
-            const item_id = itemRes.insertId;
-
-            item.toppings.forEach((t) => {
+            // 🔹 Step 5: Insert items
+            cart.forEach((item) => {
               db.query(
-                "INSERT INTO Order_Toppings (item_id, topping_id) VALUES (?, ?)",
-                [item_id, t.id],
+                "INSERT INTO Order_Items (order_id, pizza_id, crust_id, quantity, item_price) VALUES (?, ?, ?, ?, ?)",
+                [
+                  order_id,
+                  item.pizza_id,
+                  item.crust_id,
+                  item.quantity,
+                  item.price,
+                ],
+                (err4, itemRes) => {
+                  const item_id = itemRes.insertId;
+
+                  item.toppings.forEach((t) => {
+                    db.query(
+                      "INSERT INTO Order_Toppings (item_id, topping_id) VALUES (?, ?)",
+                      [item_id, t.id],
+                    );
+                  });
+                },
               );
             });
+
+            // 🔹 Step 6: Create delivery
+            db.query(
+              "INSERT INTO Delivery (order_id, delivery_status) VALUES (?, 'pending')",
+              [order_id],
+            );
+
+            // 🔹 Step 7: Update customer stats
+            db.query(
+              `UPDATE Customer 
+               SET total_orders = total_orders + 1,
+                   total_spending = total_spending + ?
+               WHERE customer_id=?`,
+              [finalTotal, user.user_id],
+            );
+
+            // 🔹 Step 8: Clear cart
+            req.session.cart = [];
+
+            res.redirect("/orders");
           },
         );
       });
+    },
+  );
+});
 
-      // ✅ Update total
-      db.query("UPDATE Orders SET total_amount=? WHERE order_id=?", [
-        total,
-        order_id,
-      ]);
+app.get("/history", requireRole("customer"), (req, res) => {
+  res.render("history");
+});
 
-      // 🔥 NEW: Create delivery record
-      db.query(
-        "INSERT INTO Delivery (order_id, delivery_status) VALUES (?, 'pending')",
-        [order_id],
-        (err) => {
-          if (err) console.log("Delivery insert error:", err);
-        },
-      );
+app.get("/history-data", requireRole("customer"), (req, res) => {
+  db.query(
+    `SELECT 
+      o.order_id,
+      o.total_amount,
+      o.created_at,
+      d.delivery_status,
+      oi.item_id,
+      oi.quantity,
+      p.name AS pizza_name,
+      c.crust_name
+    FROM Orders o
+    LEFT JOIN Delivery d ON o.order_id = d.order_id
+    LEFT JOIN Order_Items oi ON o.order_id = oi.order_id
+    LEFT JOIN Pizza p ON oi.pizza_id = p.pizza_id
+    LEFT JOIN Crust c ON oi.crust_id = c.crust_id
+    WHERE o.customer_id=?
+    ORDER BY o.order_id DESC`,
+    [req.session.user.user_id],
+    (err, rows) => {
+      // 🔥 GROUP DATA BY ORDER
+      const orders = {};
 
-      // Clear cart
-      req.session.cart = [];
+      rows.forEach((r) => {
+        if (!orders[r.order_id]) {
+          orders[r.order_id] = {
+            order_id: r.order_id,
+            total_amount: r.total_amount,
+            created_at: r.created_at,
+            delivery_status: r.delivery_status,
+            items: [],
+          };
+        }
 
-      res.redirect("/menu");
+        if (r.item_id) {
+          orders[r.order_id].items.push({
+            pizza_name: r.pizza_name,
+            crust_name: r.crust_name,
+            quantity: r.quantity,
+          });
+        }
+      });
+
+      res.json(Object.values(orders));
     },
   );
 });
@@ -361,17 +513,46 @@ app.get("/orders/status", requireRole("customer"), (req, res) => {
 
   db.query(
     `SELECT 
-        o.order_id,
-        o.status,
-        d.delivery_status,
-        d.driver_id
+      o.order_id,
+      o.created_at,
+      o.total_amount,
+      d.delivery_status,
+      oi.item_id,
+      oi.quantity,
+      p.name AS pizza_name,
+      c.crust_name
      FROM Orders o
      LEFT JOIN Delivery d ON o.order_id = d.order_id
+     LEFT JOIN Order_Items oi ON o.order_id = oi.order_id
+     LEFT JOIN Pizza p ON oi.pizza_id = p.pizza_id
+     LEFT JOIN Crust c ON oi.crust_id = c.crust_id
      WHERE o.customer_id=?
-     ORDER BY o.created_at DESC`,
+     ORDER BY o.order_id DESC`,
     [customer_id],
-    (err, result) => {
-      res.json(result);
+    (err, rows) => {
+      const orders = {};
+
+      rows.forEach((r) => {
+        if (!orders[r.order_id]) {
+          orders[r.order_id] = {
+            order_id: r.order_id,
+            total_amount: r.total_amount,
+            created_at: r.created_at,
+            delivery_status: r.delivery_status,
+            items: [],
+          };
+        }
+
+        if (r.item_id) {
+          orders[r.order_id].items.push({
+            pizza_name: r.pizza_name,
+            crust_name: r.crust_name,
+            quantity: r.quantity,
+          });
+        }
+      });
+
+      res.json(Object.values(orders));
     },
   );
 });
