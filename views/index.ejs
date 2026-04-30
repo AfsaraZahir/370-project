@@ -1,0 +1,57 @@
+<% title = 'PizzApp'; css = ['/css/style.css']; %>
+<%- include('partials/head') %>
+  <body>
+    <!-- Navbar: simple site navigation for visitors -->
+    <div class="container-fluid navbar-container">
+      <nav class="navbar navbar-expand navbar-dark bg-dark">
+        <a class="navbar-brand brand-text" href="/habits">PizzApp</a>
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item nav-signup d-flex gap-2">
+            <button
+              type="button"
+              class="btn btn-primary fw-bold"
+              onclick="window.location.href = '/signup'"
+            >
+              Sign Up
+            </button>
+            <button
+              type="button"
+              class="btn btn-outline-light fw-bold"
+              onclick="window.location.href = '/login'"
+            >
+              Login
+            </button>
+          </li>
+        </ul>
+      </nav>
+    </div>
+
+    <!-- Hero Section -->
+    <div class="container-fluid hero-bg">
+      <div class="hero-text align-items-center text-center">
+        <img src="/media/pizza.svg" alt="Habitcents logo" class="logo-dash" />
+        <h1 class="main-heading">Order Smarter</h1>
+        <h1 class="main-heading-tilted">Eat Better</h1>
+        <p class="text-dash fw-bold">
+          Welcome to PizzApp <br />
+          The all in one stop for Pizzaaaaaaa
+        </p>
+        <button
+          type="button"
+          class="btn btn-primary btn-lg btn-get-started mt-4"
+          onclick="window.location.href = '/signup'"
+        >
+          Get Started
+        </button>
+      </div>
+    </div>
+
+    <%- include("partials/footer") %>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+      crossorigin="anonymous"
+    ></script>
+  </body>
+</html>

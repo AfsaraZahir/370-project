@@ -1,0 +1,22 @@
+<% title = 'Driver Panel'; css = ['/css/base.css', '/css/style.css']; %>
+<%- include('partials/head') %>
+
+<body>
+
+<%- include('partials/navbar') %>
+
+<div class="container mt-5">
+
+  <h2 class="brand-text mb-4">🚗 Driver Panel</h2>
+
+  <div id="driver-orders" class="row g-4"></div>
+
+</div>
+
+<script type="module">
+  import { initDriver } from "/js/driver.js";
+  initDriver();
+</script>
+<%- include('partials/footer') %>
+</body>
+</html>

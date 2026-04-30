@@ -1,0 +1,21 @@
+<% title = 'Driver Dashboard'; css = ['/css/base.css', '/css/style.css']; %>
+<%- include('partials/head') %>
+
+<body>
+  <%- include('partials/navbar') %>
+
+  <div class="container mt-5">
+    <h2 class="brand-text mb-4">🚚 Driver Dashboard</h2>
+
+    <div class="row g-4">
+      <div class="col-md-6">
+        <div class="dashboard-card p-4 rounded bg-success text-white">
+          <h5>Total Delivered Orders</h5>
+          <h2><%= stats.delivered %></h2>
+        </div>
+      </div>
+    </div>
+  </div>
+<%- include('partials/footer') %>
+</body>
+</html>

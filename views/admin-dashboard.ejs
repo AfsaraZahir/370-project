@@ -1,0 +1,28 @@
+<% title = 'Admin Dashboard'; css = ['/css/base.css', '/css/style.css']; %>
+<%- include('partials/head') %>
+
+<body>
+  <%- include('partials/navbar') %>
+
+  <div class="container mt-5">
+    <h2 class="brand-text mb-4">🛠️ Admin Dashboard</h2>
+
+    <div class="row g-4">
+      <div class="col-md-6">
+        <div class="dashboard-card p-4 rounded bg-primary text-white">
+          <h5>Total Orders</h5>
+          <h2><%= stats.total_orders %></h2>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="dashboard-card p-4 rounded bg-success text-white">
+          <h5>Total Revenue</h5>
+          <h2>৳ <%= stats.revenue || 0 %></h2>
+        </div>
+      </div>
+    </div>
+  </div>
+<%- include('partials/footer') %>
+</body>
+</html>

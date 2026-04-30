@@ -1,0 +1,15 @@
+body {
+  font-family: "Archivo", sans-serif;
+  background: linear-gradient(135deg, #f4eeff, #dcd6f7);
+  color: #424874;
+  margin: 0;
+}
+
+.brand-text {
+  font-family: "Titan One", cursive;
+}
+
+.price {
+  font-family: "DM Serif Text", serif;
+  font-size: 1.3rem;
+}
