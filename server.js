@@ -605,4 +605,46 @@ app.get("/orders/status", requireRole("customer"), (req, res) => {
   );
 });
 
+// USER DASHBOARD
+app.get("/user-dashboard", requireRole("customer"), (req, res) => {
+  const userId = req.session.user.user_id;
+
+  db.query(
+    "SELECT total_orders, total_spending FROM Customer WHERE customer_id=?",
+    [userId],
+    (err, result) => {
+      res.render("user-dashboard", {
+        stats: result[0] || { total_orders: 0, total_spending: 0 },
+      });
+    },
+  );
+});
+
+// ADMIN DASHBOARD
+app.get("/admin-dashboard", requireRole("admin"), (req, res) => {
+  db.query(
+    "SELECT COUNT(*) AS total_orders, SUM(total_amount) AS revenue FROM Orders",
+    (err, result) => {
+      res.render("admin-dashboard", {
+        stats: result[0] || { total_orders: 0, revenue: 0 },
+      });
+    },
+  );
+});
+
+// DRIVER DASHBOARD
+app.get("/driver-dashboard", requireRole("driver"), (req, res) => {
+  const driverId = req.session.user.user_id;
+
+  db.query(
+    "SELECT COUNT(*) AS delivered FROM Delivery WHERE driver_id=? AND delivery_status='delivered'",
+    [driverId],
+    (err, result) => {
+      res.render("driver-dashboard", {
+        stats: result[0] || { delivered: 0 },
+      });
+    },
+  );
+});
+
 app.listen(PORT, () => console.log("Server running on port", PORT));
