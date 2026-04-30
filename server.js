@@ -40,12 +40,20 @@ app.get("/login", (req, res) => res.render("login"));
 app.get("/signup", (req, res) => res.render("signup"));
 // ADMIN
 app.get("/admin", requireRole("admin"), (req, res) => {
-  res.render("admin", { page: "admin", role: req.session.user.role });
+  res.render("admin", {
+    page: "admin",
+    role: req.session.user.role,
+    user: req.session.user,
+  });
 });
 
 // DRIVER
 app.get("/driver", requireRole("driver"), (req, res) => {
-  res.render("driver", { page: "driver", role: req.session.user.role });
+  res.render("driver", {
+    page: "driver",
+    role: req.session.user.role,
+    user: req.session.user,
+  });
 });
 
 app.post("/logout", (req, res) => {
@@ -66,6 +74,7 @@ app.post("/login", (req, res) => {
       return res.redirect("/login");
     }
 
+    //using the session to make the user logged in
     req.session.user = user;
 
     // 🔥 ROLE-BASED REDIRECT
@@ -137,10 +146,18 @@ app.post("/signup", (req, res) => {
 
 // ===== VIEWS =====
 app.get("/menu", requireLogin, (req, res) =>
-  res.render("menu", { page: "menu", role: req.session.user.role }),
+  res.render("menu", {
+    page: "menu",
+    role: req.session.user.role,
+    user: req.session.user,
+  }),
 );
 app.get("/cart", requireLogin, (req, res) =>
-  res.render("cart", { page: "cart", role: req.session.user.role }),
+  res.render("cart", {
+    page: "cart",
+    role: req.session.user.role,
+    user: req.session.user,
+  }),
 );
 
 // ===== DATA APIs =====
@@ -383,7 +400,11 @@ app.get("/order-confirmation/:id", requireRole("customer"), (req, res) => {
 });
 
 app.get("/history", requireRole("customer"), (req, res) => {
-  res.render("history", { page: "history", role: req.session.user.role });
+  res.render("history", {
+    page: "history",
+    role: req.session.user.role,
+    user: req.session.user,
+  });
 });
 
 app.get("/history-data", requireRole("customer"), (req, res) => {
@@ -549,7 +570,11 @@ app.get("/orders/data", requireRole("customer"), (req, res) => {
 });
 
 app.get("/orders", requireRole("customer"), (req, res) => {
-  res.render("orders", { page: "orders", role: req.session.user.role });
+  res.render("orders", {
+    page: "orders",
+    role: req.session.user.role,
+    user: req.session.user,
+  });
 });
 
 // ==========================
@@ -628,6 +653,7 @@ app.get("/user-dashboard", requireRole("customer"), (req, res) => {
       res.render("user-dashboard", {
         page: "user-dashboard",
         role: req.session.user.role,
+        user: req.session.user,
         stats: result[0] || { total_orders: 0, total_spending: 0 },
       });
     },
@@ -642,6 +668,7 @@ app.get("/admin-dashboard", requireRole("admin"), (req, res) => {
       res.render("admin-dashboard", {
         page: "admin-dashboard",
         role: req.session.user.role,
+        user: req.session.user,
         stats: result[0] || { total_orders: 0, revenue: 0 },
       });
     },
@@ -659,6 +686,7 @@ app.get("/driver-dashboard", requireRole("driver"), (req, res) => {
       res.render("driver-dashboard", {
         page: "driver-dashboard",
         role: req.session.user.role,
+        user: req.session.user,
         stats: result[0] || { delivered: 0 },
       });
     },
