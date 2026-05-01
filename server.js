@@ -382,8 +382,24 @@ app.post("/place-order", requireLogin, (req, res) => {
             isCouponValid = false; // Not enough orders, cross it out
           }
 
-          if (valid && (!bestDiscount || d.discount_percent > bestDiscount.discount_percent)) {
-            bestDiscount = d;
+          // Rule 2: Have they spent enough money in the past? .
+          if (
+            discount.min_spending !== null &&
+            predictedTotalSpending < discount.min_spending
+          ) {
+            isCouponValid = false; // Haven't spent enough, cross it out
+          }
+
+          // Keep the coupon that gives the biggest percentage off
+          if (isCouponValid) {
+            // If we don't have a best discount yet, OR if this new one is bigger than our current best
+            if (
+              !bestDiscount ||
+              Number(discount.discount_percent) >
+                Number(bestDiscount.discount_percent)
+            ) {
+              bestDiscount = discount; // This is our new best coupon!
+            }
           }
         });
 
