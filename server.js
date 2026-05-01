@@ -1,13 +1,13 @@
 const express = require("express");
 const path = require("path");
 const db = require("./db");
-const session = require("express-session");
+const session = require("express-session"); //checks whether the user is logged in or not
 
 const app = express();
 const PORT = 3000;
 
 app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.use(express.json()); // javascript object notation
 app.use(express.static(path.join(__dirname, "public")));
 app.set("view engine", "ejs");
 
@@ -85,20 +85,6 @@ app.post("/login", (req, res) => {
   });
 });
 
-app.post("/login", (req, res) => {
-  const { email, password } = req.body;
-
-  db.query("SELECT * FROM Users WHERE email=?", [email], (err, result) => {
-    if (!result.length) return res.redirect("/login");
-
-    const user = result[0];
-    if (user.password_hash !== password) return res.redirect("/login");
-
-    req.session.user = user;
-    res.redirect("/menu");
-  });
-});
-
 app.post("/signup", (req, res) => {
   const { username, email, password, role } = req.body;
 
@@ -173,6 +159,8 @@ app.get("/get-toppings", requireLogin, (req, res) => {
   db.query("SELECT * FROM Toppings", (err, result) => res.json(result));
 });
 
+// GET_DISCOUNT
+// MUSKAAN's PART
 app.get("/get-discount", requireLogin, (req, res) => {
   const user = req.session.user;
   const cart = req.session.cart || [];
@@ -197,12 +185,15 @@ app.get("/get-discount", requireLogin, (req, res) => {
         let bestDiscount = null;
         discounts.forEach((d) => {
           let valid = true;
-          if (d.min_orders && total_orders < d.min_orders) valid = false;
-          if (d.min_spending && total_spending < d.min_spending) valid = false;
+          if (d.min_orders !== null && total_orders < d.min_orders)
+            valid = false;
+          if (d.min_spending !== null && total_spending < d.min_spending)
+            valid = false;
           if (
             valid &&
             (!bestDiscount ||
-              d.discount_percent > bestDiscount.discount_percent)
+              Number(d.discount_percent) >
+                Number(bestDiscount.discount_percent))
           ) {
             bestDiscount = d;
           }
@@ -251,6 +242,7 @@ app.post("/remove-from-cart", requireLogin, (req, res) => {
 });
 
 // ===== PLACE ORDER =====
+// ===== MUSKAAN's PART ====
 app.post("/place-order", requireLogin, (req, res) => {
   const user = req.session.user;
   const cart = req.session.cart || [];
@@ -279,13 +271,15 @@ app.post("/place-order", requireLogin, (req, res) => {
         discounts.forEach((d) => {
           let valid = true;
 
-          if (d.min_orders && total_orders < d.min_orders) valid = false;
-          if (d.min_spending && total_spending < d.min_spending) valid = false;
+          if (d.min_orders !== null && total_orders < d.min_orders)
+            valid = false;
+          if (d.min_spending !== null && total_spending < d.min_spending)
+            valid = false;
 
           if (valid) {
             if (
               !bestDiscount ||
-              d.discount_percent > bestDiscount.discount_percent
+              Number(d.discount_percent) > Number(bestDiscount.discount_percent)
             ) {
               bestDiscount = d;
             }
@@ -359,30 +353,6 @@ app.post("/place-order", requireLogin, (req, res) => {
       });
     },
   );
-});
-
-app.get("/cart-data", (req, res) => {
-  const cart = req.session.cart || [];
-
-  let subtotal = 0;
-
-  cart.forEach((item) => {
-    subtotal += Number(item.price) * Number(item.quantity);
-  });
-
-  let discount = 0;
-  if (subtotal > 2000) {
-    discount = subtotal * 0.1;
-  }
-
-  const finalTotal = subtotal - discount;
-
-  res.json({
-    items: cart,
-    subtotal,
-    discount,
-    finalTotal,
-  });
 });
 
 app.get("/order-confirmation/:id", requireRole("customer"), (req, res) => {
